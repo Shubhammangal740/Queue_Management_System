@@ -1,44 +1,58 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const tokenSchema = new mongoose.Schema(
   {
     tokenNumber: {
-      type: String,
+      type: Number,
       required: true,
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
     service: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Service',
+      ref: "Service",
       required: true,
     },
     branch: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Branch',
+      ref: "Branch",
       required: true,
     },
     category: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Category',
+      ref: "Category",
+      required: true,
+    },
+    queue: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Queue",
+      required: true,
+    },
+    scheduledDate: {
+      type: Date,
       required: true,
     },
     status: {
       type: String,
-      enum: ['WAITING', 'IN_PROGRESS', 'COMPLETED'],
-      default: 'WAITING',
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now,
+      enum: ["WAITING", "CALLED", "COMPLETED", "SKIPPED", "CANCELLED"],
+      default: "WAITING",
     },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-module.exports = mongoose.model('Token', tokenSchema);
+// Index for queue position queries
+tokenSchema.index({ queue: 1, tokenNumber: 1 });
+
+// Index for user's tokens lookup
+tokenSchema.index({ user: 1, scheduledDate: -1 });
+
+// Index to check duplicate bookings
+tokenSchema.index({ user: 1, queue: 1, status: 1 });
+
+module.exports = mongoose.model("Token", tokenSchema);

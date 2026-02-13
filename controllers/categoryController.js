@@ -1,18 +1,21 @@
-const Category = require('../models/Category');
+const Category = require("../models/Category");
+const { asyncHandler } = require("../middleware/errorHandler");
 
-exports.getCategories = async (req, res) => {
-  try {
-    const { branchId } = req.query;
+// @desc    Get categories for a branch
+// @route   GET /api/categories?branchId=xxx
+// @access  Public
+exports.getCategories = asyncHandler(async (req, res) => {
+  const { branchId } = req.query;
 
-    if (!branchId) {
-      return res.status(400).json({ message: 'branchId is required' });
-    }
+  // branchId is validated by branchIdQueryValidator middleware
+  const categories = await Category.find({ branch: branchId })
+    .populate("service", "name")
+    .populate("branch", "name")
+    .select("-__v");
 
-    const categories = await Category.find({ branch: branchId });
-
-    return res.json({ categories });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Server error' });
-  }
-};
+  return res.json({
+    success: true,
+    count: categories.length,
+    data: categories,
+  });
+});

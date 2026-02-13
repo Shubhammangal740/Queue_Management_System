@@ -1,11 +1,15 @@
-const Service = require('../models/Service');
+const Service = require("../models/Service");
+const { asyncHandler } = require("../middleware/errorHandler");
 
-exports.getAllServices = async (req, res) => {
-  try {
-    const services = await Service.find();
-    return res.json({ services });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Server error' });
-  }
-};
+// @desc    Get all services
+// @route   GET /api/services
+// @access  Public
+exports.getAllServices = asyncHandler(async (req, res) => {
+  const services = await Service.find().select("-__v");
+
+  return res.json({
+    success: true,
+    count: services.length,
+    data: services,
+  });
+});
