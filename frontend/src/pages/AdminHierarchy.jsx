@@ -193,6 +193,17 @@ const AdminHierarchy = () => {
                 </select>
               </div>
               
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Branch Address</label>
+                <Input 
+                  placeholder="Address (Optional)..." 
+                  value={newBranch.address || ''} 
+                  onChange={e => setNewBranch({...newBranch, address: e.target.value})}
+                  className="h-14 rounded-2xl bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 transition-all"
+                  disabled={submitting}
+                />
+              </div>
+
               <div className="relative">
                 <Input 
                   placeholder="New Branch Name..." 
@@ -222,6 +233,7 @@ const AdminHierarchy = () => {
                     className="p-4 bg-white border border-slate-100 rounded-2xl hover:border-blue-200 hover:shadow-md transition-all group"
                   >
                     <p className="font-bold text-slate-700 text-sm">{b.name}</p>
+                    {b.address && <p className="text-[10px] text-slate-400 font-medium">{b.address}</p>}
                     <div className="flex items-center gap-1 mt-1">
                       <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
                       <p className="text-[10px] text-slate-400 font-black uppercase tracking-tight">{b.serviceId?.name || '---'}</p>

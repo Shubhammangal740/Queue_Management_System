@@ -1,22 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
-import { Plus, ToggleLeft, ToggleRight, Settings, Search, ListOrdered, Activity, MoreVertical, LayoutGrid, List, Layers } from 'lucide-react';
+import { Plus, ToggleLeft, ToggleRight, Settings, Search, ListOrdered, Activity, MoreVertical, LayoutGrid, List, Layers, Building2, MapPin } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { Card, Button, Badge, Input, LoadingSkeleton } from '../components/UI';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const AdminQueues = () => {
   const [queues, setQueues] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [newQueueName, setNewQueueName] = useState('');
-  const [newCategoryId, setNewCategoryId] = useState('');
-  const [showModal, setShowModal] = useState(false);
   const [search, setSearch] = useState('');
+  
+  // Hierarchy Data for Modal
+  const [services, setServices] = useState([]);
+  const [branches, setBranches] = useState([]);
+  const [categories, setCategories] = useState([]);
+  
+  // Modal States
+  const [showModal, setShowModal] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    serviceId: '',
+    branchId: '',
+    categoryId: ''
+  });
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     fetchQueues();
-    fetchCategories();
+    fetchHierarchyData();
   }, []);
 
   const fetchQueues = async () => {
@@ -30,30 +41,42 @@ const AdminQueues = () => {
     }
   };
 
-  const fetchCategories = async () => {
+  const fetchHierarchyData = async () => {
     try {
-      const response = await api.get('/categories');
-      setCategories(response.data.data);
+      const [sRes, bRes, cRes] = await Promise.all([
+        api.get('/services'),
+        api.get('/branches'),
+        api.get('/categories')
+      ]);
+      setServices(sRes.data.data || []);
+      setBranches(bRes.data.data || []);
+      setCategories(cRes.data.data || []);
     } catch (error) {
-      console.error('Failed to fetch categories');
+      console.error('Failed to fetch hierarchy');
     }
   };
 
   const handleCreate = async (e) => {
     e.preventDefault();
-    if (!newQueueName.trim()) return;
+    if (!formData.name.trim() || !formData.categoryId) {
+      toast.error('Please complete all fields');
+      return;
+    }
+    
+    setSubmitting(true);
     try {
       await api.post('/admin/queue', { 
-        name: newQueueName,
-        categoryId: newCategoryId || undefined 
+        name: formData.name,
+        categoryId: formData.categoryId 
       });
       toast.success('Queue initialized');
-      setNewQueueName('');
-      setNewCategoryId('');
+      setFormData({ name: '', serviceId: '', branchId: '', categoryId: '' });
       setShowModal(false);
       fetchQueues();
     } catch (error) {
-      toast.error('Creation failed');
+      toast.error(error.response?.data?.message || 'Creation failed');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -66,6 +89,10 @@ const AdminQueues = () => {
       toast.error('Status update failed');
     }
   };
+
+  // Filtered lists for hierarchy selection
+  const availableBranches = branches.filter(b => b.serviceId?._id === formData.serviceId);
+  const availableCategories = categories.filter(c => c.branchId?._id === formData.branchId);
 
   const filteredQueues = queues.filter(q => q.name.toLowerCase().includes(search.toLowerCase()));
 
@@ -140,7 +167,7 @@ const AdminQueues = () => {
             <thead>
               <tr className="bg-slate-50/50">
                 <th className="px-8 py-5 font-black text-slate-400 text-[10px] uppercase tracking-[0.2em]">Counter Identity</th>
-                <th className="px-8 py-5 font-black text-slate-400 text-[10px] uppercase tracking-[0.2em]">Hierarchy (S > B > C)</th>
+                <th className="px-8 py-5 font-black text-slate-400 text-[10px] uppercase tracking-[0.2em]">Hierarchy (S &gt; B &gt; C)</th>
                 <th className="px-8 py-5 font-black text-slate-400 text-[10px] uppercase tracking-[0.2em]">Current Token</th>
                 <th className="px-8 py-5 font-black text-slate-400 text-[10px] uppercase tracking-[0.2em]">Operational Status</th>
                 <th className="px-8 py-5 font-black text-slate-400 text-[10px] uppercase tracking-[0.2em] text-right">Settings</th>
@@ -222,7 +249,7 @@ const AdminQueues = () => {
         </div>
       </Card>
 
-      {/* Modern Modal */}
+      {/* Hierarchical Modal */}
       <AnimatePresence>
         {showModal && (
           <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-[100] flex items-center justify-center p-6">
@@ -230,53 +257,90 @@ const AdminQueues = () => {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="w-full max-w-lg bg-white rounded-[2rem] shadow-2xl border border-slate-200 overflow-hidden"
+              className="w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl border border-slate-200 overflow-hidden"
             >
               <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                 <div>
-                  <h3 className="text-2xl font-black text-slate-900 tracking-tight">Initialize Queue</h3>
-                  <p className="text-slate-500 font-medium text-sm">Assign a counter to a department.</p>
+                  <h3 className="text-2xl font-black text-slate-900 tracking-tight">Setup New Counter</h3>
+                  <p className="text-slate-500 font-medium text-sm">Follow the hierarchy to initialize a line.</p>
                 </div>
                 <button onClick={() => setShowModal(false)} className="p-2 hover:bg-white rounded-xl transition-colors">
                   <Plus className="w-6 h-6 text-slate-400 rotate-45" />
                 </button>
               </div>
               
-              <form onSubmit={handleCreate} className="p-8 space-y-6">
-                <div className="space-y-3">
-                  <label className="text-sm font-black text-slate-700 uppercase tracking-widest ml-1">Parent Category</label>
+              <form onSubmit={handleCreate} className="p-8 space-y-5">
+                {/* 1. Service Selection */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                    <Building2 className="w-3 h-3 text-indigo-500" /> 1. Select Service
+                  </label>
                   <select 
                     className="w-full h-14 px-4 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-bold focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
-                    value={newCategoryId}
-                    onChange={e => setNewCategoryId(e.target.value)}
+                    value={formData.serviceId}
+                    onChange={e => setFormData({...formData, serviceId: e.target.value, branchId: '', categoryId: ''})}
                     required
                   >
-                    <option value="">Select Category...</option>
-                    {categories.map(c => (
-                      <option key={c._id} value={c._id}>
-                        {c.name} ({c.branchId?.name})
-                      </option>
-                    ))}
+                    <option value="">Select Service...</option>
+                    {services.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
                   </select>
                 </div>
 
-                <div className="space-y-3">
-                  <label className="text-sm font-black text-slate-700 uppercase tracking-widest ml-1">Counter Name</label>
+                {/* 2. Branch Selection */}
+                <div className={`space-y-2 transition-all ${!formData.serviceId ? 'opacity-30 pointer-events-none' : ''}`}>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                    <MapPin className="w-3 h-3 text-blue-500" /> 2. Select Branch
+                  </label>
+                  <select 
+                    className="w-full h-14 px-4 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-bold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
+                    value={formData.branchId}
+                    onChange={e => setFormData({...formData, branchId: e.target.value, categoryId: ''})}
+                    disabled={!formData.serviceId}
+                    required
+                  >
+                    <option value="">Select Branch...</option>
+                    {availableBranches.map(b => <option key={b._id} value={b._id}>{b.name}</option>)}
+                  </select>
+                </div>
+
+                {/* 3. Category Selection */}
+                <div className={`space-y-2 transition-all ${!formData.branchId ? 'opacity-30 pointer-events-none' : ''}`}>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                    <Layers className="w-3 h-3 text-emerald-500" /> 3. Select Department
+                  </label>
+                  <select 
+                    className="w-full h-14 px-4 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-bold focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none"
+                    value={formData.categoryId}
+                    onChange={e => setFormData({...formData, categoryId: e.target.value})}
+                    disabled={!formData.branchId}
+                    required
+                  >
+                    <option value="">Select Category...</option>
+                    {availableCategories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+                  </select>
+                </div>
+
+                {/* 4. Queue Name */}
+                <div className={`space-y-2 pt-4 border-t border-slate-50 transition-all ${!formData.categoryId ? 'opacity-30 pointer-events-none' : ''}`}>
+                  <label className="text-[10px] font-black text-slate-700 uppercase tracking-widest ml-1">4. Counter Identity (Name)</label>
                   <div className="relative group">
                     <ListOrdered className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
                     <input
                       required
+                      disabled={!formData.categoryId}
                       placeholder="e.g. Counter 1, Window A"
-                      value={newQueueName}
-                      onChange={(e) => setNewQueueName(e.target.value)}
-                      className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-medium transition-all"
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      className="w-full h-14 pl-12 pr-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold transition-all"
                     />
                   </div>
                 </div>
 
-                <div className="flex gap-4 pt-4">
+                <div className="flex gap-4 pt-6">
                   <Button variant="secondary" type="button" className="flex-1 py-4 text-sm" onClick={() => setShowModal(false)}>Discard</Button>
-                  <Button type="submit" className="flex-1 py-4 text-sm shadow-indigo-200">Activate Counter</Button>
+                  <Button type="submit" className="flex-1 py-4 text-sm shadow-indigo-200" disabled={submitting}>
+                    {submitting ? 'Initializing...' : 'Activate Counter'}
+                  </Button>
                 </div>
               </form>
             </motion.div>
