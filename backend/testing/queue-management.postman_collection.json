@@ -1,0 +1,930 @@
+{
+  "info": {
+    "_postman_id": "queue-mgmt-collection",
+    "name": "Queue Management System",
+    "description": "Complete API collection for Smart Queue Management System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "serviceId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "branchId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "categoryId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Auth",
+      "item": [
+        {
+          "name": "1.1 Signup - Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('token', jsonData.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Test Customer\",\n    \"email\": \"customer@test.com\",\n    \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/signup",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "signup"]
+            },
+            "description": "Register a new customer. Token is auto-saved."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n    \"success\": true,\n    \"message\": \"User registered successfully\",\n    \"data\": {\n        \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n        \"user\": {\n            \"id\": \"65f...\",\n            \"name\": \"Test Customer\",\n            \"email\": \"customer@test.com\",\n            \"role\": \"CUSTOMER\"\n        }\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "1.2 Signup - Staff",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Staff User\",\n    \"email\": \"staff@test.com\",\n    \"password\": \"password123\",\n    \"role\": \"STAFF\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/signup",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "signup"]
+            },
+            "description": "Register a staff user (for calling tokens)"
+          },
+          "response": []
+        },
+        {
+          "name": "1.3 Login - Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('token', jsonData.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"customer@test.com\",\n    \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login and get JWT token. Token is auto-saved."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n    \"success\": true,\n    \"message\": \"Login successful\",\n    \"data\": {\n        \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n        \"user\": {\n            \"id\": \"65f...\",\n            \"name\": \"Test Customer\",\n            \"email\": \"customer@test.com\",\n            \"role\": \"CUSTOMER\"\n        }\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "1.4 Login - Staff",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('token', jsonData.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"staff@test.com\",\n    \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login as staff (for queue operations)"
+          },
+          "response": []
+        },
+        {
+          "name": "1.5 Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "profile"]
+            },
+            "description": "Get current logged-in user profile"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Services",
+      "item": [
+        {
+          "name": "2.1 Get All Services",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.length > 0) {",
+                  "        pm.collectionVariables.set('serviceId', jsonData.data[0]._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/services",
+              "host": ["{{baseUrl}}"],
+              "path": ["services"]
+            },
+            "description": "Get list of all services. First serviceId is auto-saved."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n    \"success\": true,\n    \"count\": 2,\n    \"data\": [\n        {\n            \"_id\": \"65f...\",\n            \"name\": \"Banking Services\",\n            \"description\": \"All banking related services\"\n        },\n        {\n            \"_id\": \"65f...\",\n            \"name\": \"Government Services\",\n            \"description\": \"Passport, Aadhaar, etc.\"\n        }\n    ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "2.2 Create Service (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Banking Services\",\n    \"description\": \"All banking related services\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/services",
+              "host": ["{{baseUrl}}"],
+              "path": ["services"]
+            },
+            "description": "Create a new service (Admin only)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Branches",
+      "item": [
+        {
+          "name": "3.1 Get Branches by Service",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.length > 0) {",
+                  "        pm.collectionVariables.set('branchId', jsonData.data[0]._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/branches?serviceId={{serviceId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["branches"],
+              "query": [
+                {
+                  "key": "serviceId",
+                  "value": "{{serviceId}}"
+                }
+              ]
+            },
+            "description": "Get branches for a service. First branchId is auto-saved."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n    \"success\": true,\n    \"count\": 2,\n    \"data\": [\n        {\n            \"_id\": \"65f...\",\n            \"name\": \"Main Branch - Jaipur\",\n            \"address\": \"MI Road, Jaipur\",\n            \"service\": \"65f...\"\n        },\n        {\n            \"_id\": \"65f...\",\n            \"name\": \"City Branch - Delhi\",\n            \"address\": \"Connaught Place, Delhi\",\n            \"service\": \"65f...\"\n        }\n    ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "3.2 Create Branch (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Main Branch - Jaipur\",\n    \"address\": \"MI Road, Jaipur, Rajasthan\",\n    \"serviceId\": \"{{serviceId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/branches",
+              "host": ["{{baseUrl}}"],
+              "path": ["branches"]
+            },
+            "description": "Create a new branch (Admin only)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Categories",
+      "item": [
+        {
+          "name": "4.1 Get Categories by Branch",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.length > 0) {",
+                  "        pm.collectionVariables.set('categoryId', jsonData.data[0]._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/categories?branchId={{branchId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories"],
+              "query": [
+                {
+                  "key": "branchId",
+                  "value": "{{branchId}}"
+                }
+              ]
+            },
+            "description": "Get categories for a branch. First categoryId is auto-saved."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n    \"success\": true,\n    \"count\": 3,\n    \"data\": [\n        {\n            \"_id\": \"65f...\",\n            \"name\": \"Cash Deposit\",\n            \"branch\": \"65f...\"\n        },\n        {\n            \"_id\": \"65f...\",\n            \"name\": \"Cash Withdrawal\",\n            \"branch\": \"65f...\"\n        },\n        {\n            \"_id\": \"65f...\",\n            \"name\": \"Account Opening\",\n            \"branch\": \"65f...\"\n        }\n    ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "4.2 Create Category (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Cash Deposit\",\n    \"branchId\": \"{{branchId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories"]
+            },
+            "description": "Create a new category (Admin only)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. Slots (Preview)",
+      "item": [
+        {
+          "name": "5.1 Get Slot Preview - Today",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/slots/{{branchId}}/{{categoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["slots", "{{branchId}}", "{{categoryId}}"]
+            },
+            "description": "Preview slot info before booking (today's queue)"
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n    \"success\": true,\n    \"data\": {\n        \"date\": \"2026-02-14T00:00:00.000Z\",\n        \"totalTokens\": 10,\n        \"nextTokenNumber\": 11,\n        \"nextDisplayNumber\": \"A-011\",\n        \"waitingCount\": 5,\n        \"estimatedWaitTime\": 25,\n        \"queueStatus\": \"OPEN\",\n        \"averageServiceTime\": 5\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "5.2 Get Slot Preview - Tomorrow",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/slots/{{branchId}}/{{categoryId}}?date=2026-02-15",
+              "host": ["{{baseUrl}}"],
+              "path": ["slots", "{{branchId}}", "{{categoryId}}"],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2026-02-15"
+                }
+              ]
+            },
+            "description": "Preview slot info for tomorrow"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "6. Tokens (Customer)",
+      "item": [
+        {
+          "name": "6.1 Book Token - Today",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('tokenId', jsonData.data.tokenId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"serviceId\": \"{{serviceId}}\",\n    \"branchId\": \"{{branchId}}\",\n    \"categoryId\": \"{{categoryId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tokens",
+              "host": ["{{baseUrl}}"],
+              "path": ["tokens"]
+            },
+            "description": "Book a queue token for today. TokenId is auto-saved."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n    \"success\": true,\n    \"message\": \"Token booked successfully\",\n    \"data\": {\n        \"tokenId\": \"65f...\",\n        \"tokenNumber\": 5,\n        \"displayNumber\": \"A-005\",\n        \"scheduledDate\": \"2026-02-14T00:00:00.000Z\",\n        \"queueId\": \"65f...\",\n        \"status\": \"WAITING\",\n        \"position\": 3,\n        \"estimatedWaitTime\": 10,\n        \"service\": { \"name\": \"Banking Services\" },\n        \"branch\": { \"name\": \"Main Branch - Jaipur\" },\n        \"category\": { \"name\": \"Cash Deposit\" }\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "6.2 Book Token - Tomorrow",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"serviceId\": \"{{serviceId}}\",\n    \"branchId\": \"{{branchId}}\",\n    \"categoryId\": \"{{categoryId}}\",\n    \"scheduledDate\": \"2026-02-15\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tokens",
+              "host": ["{{baseUrl}}"],
+              "path": ["tokens"]
+            },
+            "description": "Book a queue token for tomorrow"
+          },
+          "response": []
+        },
+        {
+          "name": "6.3 Get Token Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tokens/{{tokenId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["tokens", "{{tokenId}}"]
+            },
+            "description": "Get details of a specific token with position"
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n    \"success\": true,\n    \"data\": {\n        \"tokenId\": \"65f...\",\n        \"tokenNumber\": 5,\n        \"displayNumber\": \"A-005\",\n        \"status\": \"WAITING\",\n        \"scheduledDate\": \"2026-02-14T00:00:00.000Z\",\n        \"position\": 3,\n        \"peopleAhead\": 2,\n        \"estimatedWaitTime\": 10,\n        \"service\": { \"name\": \"Banking Services\" },\n        \"branch\": { \"name\": \"Main Branch - Jaipur\", \"address\": \"MI Road\" },\n        \"category\": { \"name\": \"Cash Deposit\" },\n        \"queue\": { \"date\": \"2026-02-14\", \"status\": \"OPEN\" }\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "6.4 Get My Tokens",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tokens/my",
+              "host": ["{{baseUrl}}"],
+              "path": ["tokens", "my"]
+            },
+            "description": "Get all tokens for logged-in user"
+          },
+          "response": []
+        },
+        {
+          "name": "6.5 Get My Tokens - Grouped",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tokens/my?grouped=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["tokens", "my"],
+              "query": [
+                {
+                  "key": "grouped",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Get tokens grouped by upcoming/completed"
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n    \"success\": true,\n    \"data\": {\n        \"upcoming\": {\n            \"count\": 2,\n            \"tokens\": [...]\n        },\n        \"completed\": {\n            \"count\": 1,\n            \"tokens\": [...]\n        }\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "6.6 Cancel Token",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tokens/{{tokenId}}/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["tokens", "{{tokenId}}", "cancel"]
+            },
+            "description": "Cancel a waiting token (customer can cancel own token)"
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n    \"success\": true,\n    \"message\": \"Token cancelled successfully\",\n    \"data\": {\n        \"tokenId\": \"65f...\",\n        \"tokenNumber\": 5,\n        \"displayNumber\": \"A-005\",\n        \"status\": \"CANCELLED\"\n    }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "7. Queue (Staff/Admin)",
+      "item": [
+        {
+          "name": "7.1 Get Live Queue",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/queue/{{branchId}}/{{categoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["queue", "{{branchId}}", "{{categoryId}}"]
+            },
+            "description": "Get live queue status (PUBLIC - no auth needed)"
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n    \"success\": true,\n    \"data\": {\n        \"queueId\": \"65f...\",\n        \"date\": \"2026-02-14T00:00:00.000Z\",\n        \"status\": \"OPEN\",\n        \"branch\": { \"name\": \"Main Branch - Jaipur\" },\n        \"category\": { \"name\": \"Cash Deposit\" },\n        \"currentToken\": 3,\n        \"currentDisplayNumber\": \"A-003\",\n        \"nextTokens\": [\n            { \"tokenNumber\": 4, \"displayNumber\": \"A-004\" },\n            { \"tokenNumber\": 5, \"displayNumber\": \"A-005\" }\n        ],\n        \"totalWaiting\": 5,\n        \"lastTokenNumber\": 10,\n        \"averageServiceTime\": 5\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "7.2 Call Next Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('tokenId', jsonData.data.token.tokenId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"branchId\": \"{{branchId}}\",\n    \"categoryId\": \"{{categoryId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/queue/next",
+              "host": ["{{baseUrl}}"],
+              "path": ["queue", "next"]
+            },
+            "description": "Call the next waiting token (Staff/Admin only)"
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n    \"success\": true,\n    \"message\": \"Token 4 has been called\",\n    \"data\": {\n        \"token\": {\n            \"tokenId\": \"65f...\",\n            \"tokenNumber\": 4,\n            \"displayNumber\": \"A-004\",\n            \"status\": \"CALLED\",\n            \"user\": { \"name\": \"Test Customer\" }\n        },\n        \"queueInfo\": {\n            \"currentToken\": 4,\n            \"currentDisplayNumber\": \"A-004\",\n            \"waitingCount\": 3\n        }\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "7.3 Complete Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tokens/{{tokenId}}/complete",
+              "host": ["{{baseUrl}}"],
+              "path": ["tokens", "{{tokenId}}", "complete"]
+            },
+            "description": "Mark a called token as completed (Staff/Admin only)"
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n    \"success\": true,\n    \"message\": \"Token 4 completed successfully\",\n    \"data\": {\n        \"tokenId\": \"65f...\",\n        \"tokenNumber\": 4,\n        \"displayNumber\": \"A-004\",\n        \"status\": \"COMPLETED\"\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "7.4 Skip Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tokens/{{tokenId}}/skip",
+              "host": ["{{baseUrl}}"],
+              "path": ["tokens", "{{tokenId}}", "skip"]
+            },
+            "description": "Skip a waiting/called token (Staff/Admin only)"
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n    \"success\": true,\n    \"message\": \"Token 4 has been skipped\",\n    \"data\": {\n        \"tokenId\": \"65f...\",\n        \"tokenNumber\": 4,\n        \"displayNumber\": \"A-004\",\n        \"status\": \"SKIPPED\"\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "7.5 Requeue Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tokens/{{tokenId}}/requeue",
+              "host": ["{{baseUrl}}"],
+              "path": ["tokens", "{{tokenId}}", "requeue"]
+            },
+            "description": "Re-queue a skipped token back to waiting (Staff/Admin only)"
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n    \"success\": true,\n    \"message\": \"Token 4 has been re-queued\",\n    \"data\": {\n        \"tokenId\": \"65f...\",\n        \"tokenNumber\": 4,\n        \"displayNumber\": \"A-004\",\n        \"status\": \"WAITING\",\n        \"position\": 5,\n        \"estimatedWaitTime\": 20\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "7.6 Get Queue Status (Staff)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/queue/status?branchId={{branchId}}&categoryId={{categoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["queue", "status"],
+              "query": [
+                {
+                  "key": "branchId",
+                  "value": "{{branchId}}"
+                },
+                {
+                  "key": "categoryId",
+                  "value": "{{categoryId}}"
+                }
+              ]
+            },
+            "description": "Get detailed queue status (Staff/Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "7.7 Get Waiting Tokens List",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/queue/waiting?branchId={{branchId}}&categoryId={{categoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["queue", "waiting"],
+              "query": [
+                {
+                  "key": "branchId",
+                  "value": "{{branchId}}"
+                },
+                {
+                  "key": "categoryId",
+                  "value": "{{categoryId}}"
+                }
+              ]
+            },
+            "description": "Get list of waiting tokens (Staff/Admin only)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8. Health Check",
+      "item": [
+        {
+          "name": "8.1 API Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/health",
+              "host": ["http://localhost:5000"],
+              "path": ["health"]
+            },
+            "description": "Check if API is running"
+          },
+          "response": []
+        },
+        {
+          "name": "8.2 Root Endpoint",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/",
+              "host": ["http://localhost:5000"],
+              "path": [""]
+            },
+            "description": "API welcome message"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
