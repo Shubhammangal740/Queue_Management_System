@@ -8,21 +8,19 @@ const { isValidObjectId } = require("../middleware/validators");
 exports.getBranches = asyncHandler(async (req, res) => {
   const { serviceId } = req.query;
 
-  // Build query
   const query = {};
   if (serviceId) {
-    // Validate ObjectId format
     if (!isValidObjectId(serviceId)) {
       return res.status(400).json({
         success: false,
         message: "Invalid serviceId format",
       });
     }
-    query.service = serviceId;
+    query.serviceId = serviceId;
   }
 
   const branches = await Branch.find(query)
-    .populate("service", "name")
+    .populate("serviceId", "name")
     .select("-__v");
 
   return res.json({

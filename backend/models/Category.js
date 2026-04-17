@@ -5,13 +5,9 @@ const categorySchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
+      trim: true
     },
-    service: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Service',
-      required: true,
-    },
-    branch: {
+    branchId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Branch',
       required: true,

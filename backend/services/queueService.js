@@ -126,10 +126,14 @@ const getQueueStatus = async (queueId) => {
 };
 
 /**
- * Get all available queues
+ * Get available queues (optionally filtered by categoryId)
  */
-const getAllQueues = async () => {
-  return await Queue.find({ isActive: true });
+const getAllQueues = async (categoryId) => {
+  const query = { isActive: true };
+  if (categoryId) {
+    query.categoryId = categoryId;
+  }
+  return await Queue.find(query);
 };
 
 module.exports = {

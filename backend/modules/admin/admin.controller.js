@@ -2,13 +2,42 @@ const adminService = require('./admin.service');
 const mongoose = require('mongoose');
 
 /**
+ * @desc    Hierarchy Management
+ */
+const createService = async (req, res, next) => {
+  try {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ success: false, message: 'Name is required' });
+    const service = await adminService.createService(name);
+    res.status(201).json({ success: true, message: 'Service created', data: service });
+  } catch (error) { next(error); }
+};
+
+const createBranch = async (req, res, next) => {
+  try {
+    const { name, serviceId } = req.body;
+    if (!name || !serviceId) return res.status(400).json({ success: false, message: 'Name and serviceId are required' });
+    const branch = await adminService.createBranch(name, serviceId);
+    res.status(201).json({ success: true, message: 'Branch created', data: branch });
+  } catch (error) { next(error); }
+};
+
+const createCategory = async (req, res, next) => {
+  try {
+    const { name, branchId } = req.body;
+    if (!name || !branchId) return res.status(400).json({ success: false, message: 'Name and branchId are required' });
+    const category = await adminService.createCategory(name, branchId);
+    res.status(201).json({ success: true, message: 'Category created', data: category });
+  } catch (error) { next(error); }
+};
+
+/**
  * @desc    Create new queue
  * @route   POST /api/admin/queue
- * @access  Private (ADMIN)
  */
 const createQueue = async (req, res, next) => {
   try {
-    const { name } = req.body;
+    const { name, categoryId } = req.body;
     if (!name) {
       return res.status(400).json({
         success: false,
@@ -16,7 +45,7 @@ const createQueue = async (req, res, next) => {
       });
     }
 
-    const queue = await adminService.createQueue({ name });
+    const queue = await adminService.createQueue({ name, categoryId });
     res.status(201).json({
       success: true,
       message: 'Queue created successfully',
@@ -29,8 +58,6 @@ const createQueue = async (req, res, next) => {
 
 /**
  * @desc    Get all queues
- * @route   GET /api/admin/queues
- * @access  Private (ADMIN)
  */
 const getAllQueues = async (req, res, next) => {
   try {
@@ -46,8 +73,6 @@ const getAllQueues = async (req, res, next) => {
 
 /**
  * @desc    Update queue
- * @route   PATCH /api/admin/queue/:id
- * @access  Private (ADMIN)
  */
 const updateQueue = async (req, res, next) => {
   try {
@@ -79,8 +104,6 @@ const updateQueue = async (req, res, next) => {
 
 /**
  * @desc    Get all users
- * @route   GET /api/admin/users
- * @access  Private (ADMIN)
  */
 const getAllUsers = async (req, res, next) => {
   try {
@@ -96,8 +119,6 @@ const getAllUsers = async (req, res, next) => {
 
 /**
  * @desc    Update user role
- * @route   PATCH /api/admin/user/:id/role
- * @access  Private (ADMIN)
  */
 const updateUserRole = async (req, res, next) => {
   try {
@@ -142,8 +163,6 @@ const updateUserRole = async (req, res, next) => {
 
 /**
  * @desc    Assign queue to staff
- * @route   PATCH /api/admin/staff/:id/assign-queue
- * @access  Private (ADMIN)
  */
 const assignQueue = async (req, res, next) => {
   try {
@@ -174,8 +193,6 @@ const assignQueue = async (req, res, next) => {
 
 /**
  * @desc    Get system dashboard stats
- * @route   GET /api/admin/dashboard
- * @access  Private (ADMIN)
  */
 const getDashboard = async (req, res, next) => {
   try {
@@ -191,8 +208,6 @@ const getDashboard = async (req, res, next) => {
 
 /**
  * @desc    Get tokens for a specific queue
- * @route   GET /api/admin/queue/:id/tokens?status=WAITING
- * @access  Private (ADMIN)
  */
 const getQueueTokens = async (req, res, next) => {
   try {
@@ -217,6 +232,9 @@ const getQueueTokens = async (req, res, next) => {
 };
 
 module.exports = {
+  createService,
+  createBranch,
+  createCategory,
   createQueue,
   getAllQueues,
   updateQueue,

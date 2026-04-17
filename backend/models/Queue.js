@@ -7,6 +7,11 @@ const queueSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    categoryId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Category',
+      required: true,
+    },
     currentTokenNumber: {
       type: Number,
       default: 0,

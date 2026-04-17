@@ -137,8 +137,13 @@ const StaffDashboard = () => {
 
         <div className="flex-1 space-y-6">
           <div className="space-y-1">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Line</p>
-            <h2 className="text-2xl font-black text-indigo-600">{queueData.queue.name}</h2>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              {queueData.queue.categoryId?.branchId?.serviceId?.name} › {queueData.queue.categoryId?.branchId?.name}
+            </p>
+            <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">
+              {queueData.queue.categoryId?.name}
+            </p>
+            <h2 className="text-2xl font-black text-slate-800">{queueData.queue.name}</h2>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

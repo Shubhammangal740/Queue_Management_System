@@ -9,7 +9,9 @@ import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminQueues from './pages/AdminQueues';
 import AdminUsers from './pages/AdminUsers';
+import AdminHierarchy from './pages/AdminHierarchy';
 import StaffDashboard from './pages/StaffDashboard';
+import JoinQueue from './pages/JoinQueue';
 import AdminLayout from './layouts/AdminLayout';
 
 const Unauthorized = () => (
@@ -46,12 +48,18 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
+          
+          {/* User selection flow (Protected to ensure token generation works) */}
+          <Route element={<ProtectedRoute allowedRoles={['USER', 'STAFF', 'ADMIN']} />}>
+            <Route path="/join" element={<JoinQueue />} />
+          </Route>
 
           {/* Admin Routes with Layout */}
           <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
             <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
             <Route path="/admin/queues" element={<AdminLayout><AdminQueues /></AdminLayout>} />
             <Route path="/admin/users" element={<AdminLayout><AdminUsers /></AdminLayout>} />
+            <Route path="/admin/hierarchy" element={<AdminLayout><AdminHierarchy /></AdminLayout>} />
           </Route>
 
           {/* Staff Routes */}
@@ -59,8 +67,8 @@ function App() {
             <Route path="/staff" element={<StaffDashboard />} />
           </Route>
 
-          {/* Default Redirection */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          {/* Default Redirection: Go to /join which will trigger login if needed */}
+          <Route path="/" element={<Navigate to="/join" replace />} />
           <Route path="*" element={<div>404 Not Found</div>} />
         </Routes>
       </BrowserRouter>

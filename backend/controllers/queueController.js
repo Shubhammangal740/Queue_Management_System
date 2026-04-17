@@ -82,13 +82,14 @@ const getQueueStatus = async (req, res, next) => {
 };
 
 /**
- * @desc    Get all queues
+ * @desc    Get all queues (optionally filtered by categoryId)
  * @route   GET /api/queue
  * @access  Public
  */
 const getAllQueues = async (req, res, next) => {
   try {
-    const queues = await queueService.getAllQueues();
+    const { categoryId } = req.query;
+    const queues = await queueService.getAllQueues(categoryId);
     res.status(200).json({
       success: true,
       data: queues

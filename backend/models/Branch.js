@@ -5,12 +5,9 @@ const branchSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
+      trim: true
     },
-    address: {
-      type: String,
-      required: false,
-    },
-    service: {
+    serviceId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Service',
       required: true,

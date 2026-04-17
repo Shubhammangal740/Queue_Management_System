@@ -63,13 +63,20 @@ app.use(express.json({ limit: "10kb" }));
 const authRoutes = require("./routes/authRoutes");
 const queueRoutes = require("./routes/queueRoutes");
 const tokenRoutes = require("./routes/tokenRoutes");
+const serviceRoutes = require("./routes/serviceRoutes");
+const branchRoutes = require("./routes/branchRoutes");
+const categoryRoutes = require("./routes/categoryRoutes");
 const staffRoutes = require("./modules/staff/staffRoutes");
 const adminRoutes = require("./modules/admin/admin.routes");
 
 // Mount routes
 app.use("/api/auth", authRoutes);
 app.use("/api/queue", queueRoutes);
+app.use("/api/queues", queueRoutes);
 app.use("/api/tokens", tokenRoutes);
+app.use("/api/services", serviceRoutes);
+app.use("/api/branches", branchRoutes);
+app.use("/api/categories", categoryRoutes);
 app.use("/api/staff", staffRoutes);
 app.use("/api/admin", adminRoutes);
 

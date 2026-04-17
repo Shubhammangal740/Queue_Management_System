@@ -1,22 +1,58 @@
 const User = require('../../models/User');
 const Queue = require('../../models/Queue');
 const Token = require('../../models/Token');
+const Service = require('../../models/Service');
+const Branch = require('../../models/Branch');
+const Category = require('../../models/Category');
+
+/**
+ * Hierarchy Management
+ */
+const createService = async (name) => {
+  return await Service.create({ name });
+};
+
+const createBranch = async (name, serviceId) => {
+  const service = await Service.findById(serviceId);
+  if (!service) throw new Error('Service not found');
+  return await Branch.create({ name, serviceId });
+};
+
+const createCategory = async (name, branchId) => {
+  const branch = await Branch.findById(branchId);
+  if (!branch) throw new Error('Branch not found');
+  return await Category.create({ name, branchId });
+};
 
 /**
  * Queue Management
  */
 const createQueue = async (data) => {
-  // Ensure default values are explicit
   const queueData = {
     name: data.name,
+    categoryId: data.categoryId,
     currentTokenNumber: 0,
     isActive: true
   };
+  
+  if (data.categoryId) {
+    const category = await Category.findById(data.categoryId);
+    if (!category) throw new Error('Category not found');
+  }
+
   return await Queue.create(queueData);
 };
 
 const getAllQueues = async () => {
-  return await Queue.find().sort({ createdAt: -1 });
+  return await Queue.find()
+    .populate({
+      path: 'categoryId',
+      populate: {
+        path: 'branchId',
+        populate: { path: 'serviceId' }
+      }
+    })
+    .sort({ createdAt: -1 });
 };
 
 const updateQueue = async (id, data) => {
@@ -27,7 +63,6 @@ const updateQueue = async (id, data) => {
  * User Management
  */
 const getAllUsers = async () => {
-  // Only return name, email, role, and queueId as requested
   return await User.find()
     .select('name email role queueId')
     .sort({ createdAt: -1 });
@@ -66,7 +101,7 @@ const assignQueueToStaff = async (staffId, queueId) => {
 };
 
 /**
- * Dashboard Stats (Optional but kept for completeness)
+ * Dashboard Stats
  */
 const getDashboardStats = async () => {
   const [totalUsers, totalQueues, totalTokens, activeTokens] = await Promise.all([
@@ -85,7 +120,7 @@ const getDashboardStats = async () => {
 };
 
 /**
- * Get tokens for a specific queue (Admin view)
+ * Get tokens for a specific queue
  */
 const getQueueTokens = async (queueId, statusFilter) => {
   const queue = await Queue.findById(queueId);
@@ -106,6 +141,9 @@ const getQueueTokens = async (queueId, statusFilter) => {
 };
 
 module.exports = {
+  createService,
+  createBranch,
+  createCategory,
   createQueue,
   getAllQueues,
   updateQueue,

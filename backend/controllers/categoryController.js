@@ -1,5 +1,6 @@
 const Category = require("../models/Category");
 const { asyncHandler } = require("../middleware/errorHandler");
+const { isValidObjectId } = require("../middleware/validators");
 
 // @desc    Get categories for a branch
 // @route   GET /api/categories?branchId=xxx
@@ -7,10 +8,22 @@ const { asyncHandler } = require("../middleware/errorHandler");
 exports.getCategories = asyncHandler(async (req, res) => {
   const { branchId } = req.query;
 
-  // branchId is validated by branchIdQueryValidator middleware
-  const categories = await Category.find({ branch: branchId })
-    .populate("service", "name")
-    .populate("branch", "name")
+  const query = {};
+  if (branchId) {
+    if (!isValidObjectId(branchId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid branchId format",
+      });
+    }
+    query.branchId = branchId;
+  }
+
+  const categories = await Category.find(query)
+    .populate({
+      path: 'branchId',
+      populate: { path: 'serviceId', select: 'name' }
+    })
     .select("-__v");
 
   return res.json({

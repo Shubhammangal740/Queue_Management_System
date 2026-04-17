@@ -17,7 +17,13 @@ const getStaffMe = async (userId) => {
  * Get queue assigned to staff
  */
 const getStaffQueue = async (queueId) => {
-  const queue = await Queue.findById(queueId);
+  const queue = await Queue.findById(queueId).populate({
+    path: 'categoryId',
+    populate: {
+      path: 'branchId',
+      populate: { path: 'serviceId' }
+    }
+  });
   if (!queue) {
     throw new Error('Assigned queue not found');
   }

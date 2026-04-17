@@ -138,10 +138,9 @@ const serviceIdQueryValidator = [
 
 const branchIdQueryValidator = [
   query("branchId")
-    .notEmpty()
-    .withMessage("branchId is required")
+    .optional()
     .custom((value) => {
-      if (!isValidObjectId(value)) {
+      if (value && !isValidObjectId(value)) {
         throw new Error("Invalid branchId format");
       }
       return true;

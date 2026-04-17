@@ -10,6 +10,11 @@ router.use(authorizeRoles('ADMIN'));
 // Dashboard stats
 router.get('/dashboard', adminController.getDashboard);
 
+// Hierarchy Management
+router.post('/service', adminController.createService);
+router.post('/branch', adminController.createBranch);
+router.post('/category', adminController.createCategory);
+
 // Queue Management
 router.post('/queue', adminController.createQueue);
 router.get('/queues', adminController.getAllQueues);
